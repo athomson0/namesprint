@@ -29,6 +29,7 @@ make dev
 
 * Vite
 * ReactJS
+* Tailwind
 * Flask
 * Nginx
 * Docker and docker-compose
