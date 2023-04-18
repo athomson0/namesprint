@@ -1,0 +1,20 @@
+---
+- name: Clone the repository as "web" user
+  ansible.builtin.git:
+    repo: git@github.com:athomson0/namesprint.git
+    dest: /home/web/namesprint
+    key_file: /home/web/.ssh/namesprint_repo_readonly
+    accept_hostkey: true
+  become: true
+  become_user: web
+
+- name: Build and run the Docker containers as "web" user
+  ansible.builtin.shell:
+    chdir: /home/web/namesprint
+    cmd: /home/web/namesprint/deploy.sh
+  args:
+    executable: /bin/bash
+  become: true
+  become_user: web
+
+

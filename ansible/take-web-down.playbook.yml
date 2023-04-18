@@ -1,0 +1,10 @@
+- name: Stop all Docker containers on all hosts
+  hosts: webservers
+  become: yes
+  become_user: web
+  gather_facts: no
+  tasks:
+    - name: Run 'make stop' in the project directory
+      ansible.builtin.shell:
+        cmd: make stop
+        chdir: /home/web/namesprint

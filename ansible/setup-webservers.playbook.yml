@@ -1,0 +1,9 @@
+- name: Set up a namesprint server
+  hosts: webservers
+  become: yes
+  roles:
+    - common
+    - docker
+    - web
+    - ssl_setup
+    - node_exporter

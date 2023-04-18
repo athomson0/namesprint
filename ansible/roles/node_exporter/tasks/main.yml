@@ -1,0 +1,60 @@
+- name: Create node_exporter group
+  ansible.builtin.group:
+    name: node_exporter
+    state: present
+
+- name: Create node_exporter user
+  ansible.builtin.user:
+    name: node_exporter
+    group: node_exporter
+    system: yes
+    shell: /bin/false
+
+- name: Download node_exporter
+  ansible.builtin.get_url:
+    url: "https://github.com/prometheus/node_exporter/releases/download/v1.5.0/node_exporter-1.5.0.linux-amd64.tar.gz"
+    dest: "/tmp/node_exporter-1.5.0.linux-amd64.tar.gz"
+
+- name: Extract node_exporter archive
+  ansible.builtin.unarchive:
+    src: "/tmp/node_exporter-1.5.0.linux-amd64.tar.gz"
+    dest: "/tmp"
+    remote_src: yes
+
+- name: Move node_exporter binary to /usr/local/bin
+  ansible.builtin.command:
+    cmd: mv /tmp/node_exporter-1.5.0.linux-amd64/node_exporter /usr/local/bin/
+    removes: "/tmp/node_exporter-1.5.0.linux-amd64/node_exporter"
+
+- name: Set ownership and permissions for node_exporter binary
+  ansible.builtin.file:
+    path: /usr/local/bin/node_exporter
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Create node_exporter systemd service file
+  ansible.builtin.copy:
+    src: ../files/node_exporter.service
+    dest: /etc/systemd/system/node_exporter.service
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Reload systemd
+  ansible.builtin.systemd:
+    daemon_reload: yes
+
+- name: Enable and start node_exporter service
+  ansible.builtin.systemd:
+    name: node_exporter
+    state: started
+    enabled: yes
+
+- name: Allow access to port node_exporter from monitoring host
+  ansible.builtin.ufw:
+    rule: allow
+    proto: tcp
+    port: 9100,9113
+    from_ip: "{{ hostvars['monitoring']['ansible_host'] }}"
+

@@ -1,0 +1,49 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+      target: production
+    image: namesprint-api
+    networks:
+      - namesprint_network
+    env_file:
+      - /home/web/.env
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+      target: production-nginx
+    image: namesprint-web
+    networks:
+      - namesprint_network
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /etc/letsencrypt/live/namesprint.io:/etc/nginx/ssl
+    environment:
+      NODE_ENV: production
+    depends_on:
+      - api
+      
+  nginx-exporter:
+    image: nginx/nginx-prometheus-exporter:0.11.0
+    networks:
+      namesprint_network:
+        ipv4_address: 172.28.1.2
+    command:
+      - "-nginx.scrape-uri=http://web:80/stub_status"
+    ports:
+      - "9113:9113"
+    depends_on:
+      - web
+
+networks:
+  namesprint_network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.28.0.0/16

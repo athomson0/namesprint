@@ -1,0 +1,56 @@
+---
+- name: Install Certbot and the DNS plugin
+  ansible.builtin.package:
+    name:
+      - certbot
+      - python3-certbot-dns-cloudflare
+    state: present
+  when: "'primary' in group_names"
+
+- name: Ensure /root/.secrets directory exists
+  ansible.builtin.file:
+    path: /root/.secrets
+    state: directory
+    mode: 0600
+  when: "'primary' in group_names"
+
+- name: Copy Cloudflare API credentials
+  ansible.builtin.copy:
+    src: ../files/cloudflare.ini.private
+    dest: /root/.secrets/cloudflare.ini
+    mode: 0600
+  when: "'primary' in group_names"
+
+# Hangs if renewal is not due - only really needs to be run once on the primary server
+# A cronjob will handle it from then on.
+#
+# - name: Obtain SSL certificate
+#   ansible.builtin.command:
+#     cmd: >
+#       certbot certonly --dns-cloudflare --dns-cloudflare-credentials /root/.secrets/cloudflare.ini
+#       -d "*.namesprint.io" -d namesprint.io --dns-cloudflare-propagation-seconds 60 --agree-tos --no-eff-email --email contact@namesprint.io
+#   when: "'primary' in group_names"
+
+- name: Create sync_certificates.sh script
+  ansible.builtin.template:
+    src: sync_certificates.j2
+    dest: /root/sync_certificates.sh
+    mode: 0755
+  when: "'primary' in group_names"
+
+- name: Schedule a cron job to run sync_certificates.sh after certbot renewals
+  ansible.builtin.cron:
+    name: Sync SSL certificates to other servers
+    minute: "0"
+    hour: "1"
+    job: "certbot renew --quiet --post-hook '/root/sync_certificates.sh'"
+    user: root
+  when: "'primary' in group_names"
+
+- name: Sync certificates
+  ansible.builtin.shell:
+    chdir: /root/
+    cmd: /root/sync_certificates.sh
+  args:
+    executable: /bin/bash
+  when: "'primary' in group_names"

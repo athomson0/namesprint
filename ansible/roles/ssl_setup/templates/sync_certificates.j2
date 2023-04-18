@@ -1,0 +1,13 @@
+#!/bin/bash
+CERT_DIR="/etc/letsencrypt/live/namesprint.io"
+REMOTE_USER="web"
+REMOTE_SERVERS=({% for host in groups['webservers'] %}{{ hostvars[host].ansible_host }}{% if not loop.last %} {% endif %}{% endfor %})
+
+for server in "${REMOTE_SERVERS[@]}"; do
+  rsync -avzL -e "ssh -o StrictHostKeyChecking=no -i /home/web/.ssh/primary_ssh_key" \
+    "${CERT_DIR}/" \
+    "${REMOTE_USER}@${server}:${CERT_DIR}"
+
+  # Reload the certs
+  ssh -o StrictHostKeyChecking=no -i /home/web/.ssh/primary_ssh_key web@$server "docker exec namesprint_web_1 nginx -s reload"
+done

@@ -1,0 +1,59 @@
+- name: Create the "web" user
+  ansible.builtin.user:
+    name: web
+    shell: /bin/bash
+    groups: sudo
+    append: yes
+
+- name: Add primary server's public key to authorized_keys
+  ansible.builtin.authorized_key:
+    user: web
+    key: "{{ lookup('file', '../files/primary_ssh_key.pub') }}"
+    state: present
+
+- name: Add "web" user to the "docker" group
+  ansible.builtin.user:
+    name: web
+    groups: docker
+    append: yes
+
+- name: Ensure /etc/nginx/ssl directory exists and is writable by the web user
+  ansible.builtin.file:
+    path: /etc/letsencrypt/live/namesprint.io
+    state: directory
+    owner: web
+    group: web
+    mode: 0755
+
+- name: Ensure /home/web/.ssh directory exists
+  ansible.builtin.file:
+    path: /home/web/.ssh
+    state: directory
+    owner: web
+    group: web
+    mode: 0700
+
+- name: Copy the private SSH key for Git access
+  ansible.builtin.copy:
+    src: ../files/namesprint_repo_readonly.private
+    dest: /home/web/.ssh/namesprint_repo_readonly
+    mode: 0600
+    owner: web
+    group: web
+
+- name: Copy primary server's SSH private key
+  ansible.builtin.copy:
+    src: ../files/primary_ssh_key.private
+    dest: /home/web/.ssh/primary_ssh_key
+    mode: 0600
+    owner: web
+    group: web
+  when: "'primary' in group_names"
+
+- name: Copy .env file
+  ansible.builtin.template:
+    src: ../files/dot.env.private
+    dest: /home/web/.env
+    owner: web
+    group: web
+    mode: '0644'

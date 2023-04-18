@@ -1,0 +1,33 @@
+{
+  "NameCheap": {
+    "logo": "https://logo.clearbit.com/namecheap.com",
+    "blurb": "NameCheap is a trusted domain registrar, offering reliable and affordable domain name registration services to businesses and individuals worldwide.",
+    "features": [
+      "Easy domain search and registration process",
+      "24/7 customer support",
+      "Secure and reliable domain management tools",
+      "Free WHOIS privacy protection",
+      "Affordable domain pricing and renewal fees"
+    ]
+  },
+  "DummyRegistrar": {
+    "logo": "https://logo.clearbit.com/nominet.uk",
+    "blurb": "As a distinguished domain registrar, DummyRegistrar proudly delivers secure, budget-friendly domain registration services, catering to the needs of businesses and individuals around the world.",
+    "features": [
+      "Effortless domain search and registration experience",
+      "Round-the-clock customer assistance",
+      "Customizable domain email addresses"
+    ]
+  },
+  "NamesCoUk": {
+    "logo": "https://logo.clearbit.com/names.co.uk",
+    "blurb": "Names.co.uk is a leading domain registrar in the UK, providing a wide range of domain services and solutions to help businesses and individuals establish their online presence.",
+    "features": [
+      "User-friendly domain registration process",
+      "Expert customer support",
+      "Robust domain management tools",
+      "Competitive pricing for domain registration and renewals"
+    ]
+  }
+}
+  

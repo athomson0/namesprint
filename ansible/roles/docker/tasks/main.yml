@@ -1,0 +1,46 @@
+---
+
+- name: Add Docker GPG key
+  ansible.builtin.apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+
+- name: Add Docker repository
+  ansible.builtin.apt_repository:
+    repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable
+    state: present
+
+- name: Update APT package cache
+  ansible.builtin.apt:
+    update_cache: yes
+
+- name: Install docker
+  ansible.builtin.package:
+    name:
+      - docker
+      - docker-compose
+
+- name: Check if Loki Docker plugin is installed
+  shell: docker plugin ls | grep -q 'loki:latest'
+  register: loki_installed
+  ignore_errors: true
+  changed_when: false
+
+- name: Install Loki Docker plugin
+  command: docker plugin install grafana/loki-docker-driver:latest --alias loki --grant-all-permissions
+  when: loki_installed.rc != 0
+
+- name: Copy over docker daemon.json
+  ansible.builtin.copy:
+    src: ../files/daemon.json
+    dest: /etc/docker/daemon.json
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Restart docker
+  ansible.builtin.systemd:
+    name: docker
+    state: restarted
+    enabled: yes
+
