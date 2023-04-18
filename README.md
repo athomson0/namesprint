@@ -2,6 +2,8 @@
 
 A web app which generates domain name suggestions, and then checks availability across hundreds of TLDs instantly.
 
+A demo can be found at: https://namesprint.io
+
 ![Screenshot of domain name suggestions](res/web-1.png)
 ![Screenshot of TLD search](res/web-2.png)
 
