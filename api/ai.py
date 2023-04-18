@@ -36,4 +36,4 @@ def generate_name_suggestions(job_id, input):
         job["status"] = "finished"
     except Exception as e:
         job["error"] = str(e)
-        job["status"] = "failed"
+        job["status"] = "finished"
